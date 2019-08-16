@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.Scanner;
 
 public class AppContext {
-
     public static final int FPS = 50;
     public static final int FPS_DELAY_MILLIS = 1000 / FPS;
 
@@ -16,6 +15,10 @@ public class AppContext {
     public static final double MOVE_SPEED = 0.1;
 
     public static final int[][] MAP = loadFile();
+
+    public static final double STARTX = getXY(0) + 0.5;
+
+    public static final double STARTY = getXY(1) + 0.5;
 
     public static int[][] loadFile() {
         int[][] map = new int[5][5];
@@ -35,6 +38,24 @@ public class AppContext {
             System.out.println(e);
         }
         return map;
+    }
+
+    public static int getXY(int which) {
+        try {
+            Scanner scan = new Scanner(new File("pack/map.txt"));
+            String line = scan.nextLine();
+            while(line.charAt(0) != '#') {
+                line = scan.nextLine();
+            }
+            if(which == 0) { // x
+                return Integer.parseInt(line.substring(1).split(",")[0]);
+            } else { // y
+                return Integer.parseInt(line.substring(1).split(",")[1]);
+            }
+        } catch(Exception e) {
+            System.out.println(e);
+        }
+        return 0;
     }
 
     public static void main(String[] args) {

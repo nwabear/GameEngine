@@ -7,15 +7,12 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.awt.image.WritableRaster;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Vector;
 
 public class Surface extends JPanel {
-
-    private double posX = 3;
-    private double posY = 3;
+    private double posX;
+    private double posY;
 
     private double dirX = -1;
     private double dirY = 0;
@@ -23,7 +20,7 @@ public class Surface extends JPanel {
     private double planeX = 0;
     private double planeY = 0.66;
 
-    private double rotSpeed = 0.05;
+    private double rotSpeed;
 
     private ArrayList<Sprite> sprites = new ArrayList<>();
 
@@ -41,7 +38,12 @@ public class Surface extends JPanel {
     private int[][] map = AppContext.MAP;
 
     public Surface(Frame frame) {
+        this.posX = AppContext.STARTX;
+        this.posY = AppContext.STARTY;
         this.frame = frame;
+        this.rotSpeed = 1.579;
+        this.rotate(2);
+        this.rotSpeed = 0.05;
         this.buffer = new Color[this.windowWidth][this.windowLength];
         for(int x = 0; x < windowWidth; x++) {
             for(int y = 0; y < windowLength; y++) {
@@ -218,8 +220,8 @@ public class Surface extends JPanel {
         int floorX = (int)this.posX;
         int floorY = (int)this.posY;
 
-        for(int x = floorX - 5; x <= floorX + 5; x++) {
-            for(int y = floorY + 5; y >= floorY - 5; y--) {
+        for(int x = floorX + 5; x >= floorX - 5; x--) {
+            for(int y = floorY - 5; y <= floorY + 5; y++) {
                 if(x != floorX || y != floorY) {
                     try {
                         g2d.setColor(getColor(map[x][y]));

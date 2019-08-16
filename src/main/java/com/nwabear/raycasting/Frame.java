@@ -7,7 +7,6 @@ import java.awt.event.KeyListener;
 import java.util.ArrayList;
 
 public class Frame extends JFrame {
-
     private Surface surface;
 
     private ArrayList<Actions> actions = new ArrayList<>();

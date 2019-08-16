@@ -3,7 +3,6 @@ package com.nwabear.raycasting;
 import static com.nwabear.raycasting.AppContext.FPS_DELAY_MILLIS;
 
 public class GameClock implements Runnable {
-
     private Surface display;
 
     public GameClock(Surface display) {
