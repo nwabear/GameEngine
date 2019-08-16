@@ -87,7 +87,7 @@ public class Frame extends JFrame {
         } );
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         Frame display = new Frame();
         EventQueue.invokeLater( () -> {
             display.setVisible( true );
