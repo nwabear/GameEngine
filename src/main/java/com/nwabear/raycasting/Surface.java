@@ -9,6 +9,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Surface extends JPanel {
     private double posX;
@@ -112,7 +113,6 @@ public class Surface extends JPanel {
         super.paintComponent(graphics);
 
         Graphics2D g2d = (Graphics2D)(graphics);
-        g2d.setColor(Color.BLACK);
         int w = AppContext.WIDTH;
         for(int x = 0; x < w; x++) {
             double cameraX = 2 * x / (double)(w) - 1;
@@ -186,6 +186,8 @@ public class Surface extends JPanel {
 
             int texNum = map[mapX][mapY] - 1;
 
+            double wallDistance;
+
             double wallX;
             if(side == 0)   wallX = posY + perpWallDist * rayDirY;
             else            wallX = posX + perpWallDist * rayDirX;
@@ -194,6 +196,11 @@ public class Surface extends JPanel {
             int texX = (int)(wallX * (double) texSize);
             if(side == 1 && rayDirX > 0) texX = texSize - texX - 1;
             if(side == 1 && rayDirY < 0) texX = texSize - texX - 1;
+            if (side == 0) {
+                wallDistance = (mapX - posX + (1 - stepX) / 2) / rayDirX;
+            } else {
+                wallDistance = (mapY - posY + (1 - stepY) / 2) / rayDirY;
+            }
 
             for(int y = drawStart; y < drawEnd; y++) {
                 int d = y * 256 - h * 128 + lineHeight * 128;
