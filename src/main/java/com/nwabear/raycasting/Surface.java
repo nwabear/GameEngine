@@ -25,7 +25,7 @@ public class Surface extends JPanel {
 
     private double rotSpeed = 0.05;
 
-    private boolean stop = false;
+    private ArrayList<Sprite> sprites = new ArrayList<>();
 
     private ArrayList<Actions> actions = new ArrayList<>();
 
@@ -48,7 +48,6 @@ public class Surface extends JPanel {
                 buffer[x][y] = Color.black;
             }
         }
-        System.out.println("1");
         images = new BufferedImage[8];
 
         texSize = AppContext.TEX_SIZE;
@@ -58,49 +57,49 @@ public class Surface extends JPanel {
         }
 
         try {
-            images[0] = ImageIO.read(new File("pics/greystone.png"));
+            images[0] = ImageIO.read(new File("pack/01.png"));
         } catch(Exception e) {
             // do nothing
         }
 
         try {
-            images[1] = ImageIO.read(new File("pics/bluestone.png"));
+            images[1] = ImageIO.read(new File("pack/02.png"));
         } catch(Exception e) {
             // do nothing
         }
 
         try {
-            images[2] = ImageIO.read(new File("pics/mossy.png"));
+            images[2] = ImageIO.read(new File("pack/03.png"));
         } catch(Exception e) {
             // do nothing
         }
 
         try {
-            images[3] = ImageIO.read(new File("pics/purplestone.png"));
+            images[3] = ImageIO.read(new File("pack/04.png"));
         } catch(Exception e) {
             // do nothing
         }
 
         try {
-            images[4] = ImageIO.read(new File("pics/redbrick.png"));
+            images[4] = ImageIO.read(new File("pack/05.png"));
         } catch(Exception e) {
             // do nothing
         }
 
         try {
-            images[5] = ImageIO.read(new File("pics/eagle.png"));
+            images[5] = ImageIO.read(new File("pack/06.png"));
         } catch(Exception e) {
             // do nothing
         }
 
         try {
-            images[6] = ImageIO.read(new File("pics/wood.png"));
+            images[6] = ImageIO.read(new File("pack/07.png"));
         } catch(Exception e) {
             // do nothing
         }
 
         try {
-            images[7] = ImageIO.read(new File("pics/colorstone.png"));
+            images[7] = ImageIO.read(new File("pack/08.png"));
         } catch(Exception e) {
             // do nothing
         }
