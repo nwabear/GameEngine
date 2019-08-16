@@ -1,8 +1,16 @@
 package com.nwabear.raycasting;
 
+import com.sun.webkit.dom.RGBColorImpl;
+import org.w3c.dom.css.RGBColor;
+
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Vector;
 
 public class Surface extends JPanel {
 
@@ -23,16 +31,79 @@ public class Surface extends JPanel {
 
     private Frame frame;
 
-    private int windowLength = AppContext.LENGTH;
-    private int windowWidth = AppContext.WIDTH;
+    private final int windowLength = AppContext.LENGTH;
+    private final int windowWidth = AppContext.WIDTH;
+    private int texSize;
 
-    private int[][] buffer;
+    private Color[][] buffer;
+    BufferedImage[] images;
 
     private int[][] map = AppContext.MAP;
 
     public Surface(Frame frame) {
         this.frame = frame;
-        this.buffer = new int[this.windowLength][this.windowWidth];
+        this.buffer = new Color[this.windowWidth][this.windowLength];
+        for(int x = 0; x < windowWidth; x++) {
+            for(int y = 0; y < windowLength; y++) {
+                buffer[x][y] = Color.black;
+            }
+        }
+        System.out.println("1");
+        images = new BufferedImage[8];
+
+        texSize = AppContext.TEX_SIZE;
+
+        for(int i = 0; i < 8; i++) {
+            images[i] = new BufferedImage(texSize, texSize, BufferedImage.TYPE_3BYTE_BGR);
+        }
+
+        try {
+            images[0] = ImageIO.read(new File("pics/greystone.png"));
+        } catch(Exception e) {
+            // do nothing
+        }
+
+        try {
+            images[1] = ImageIO.read(new File("pics/bluestone.png"));
+        } catch(Exception e) {
+            // do nothing
+        }
+
+        try {
+            images[2] = ImageIO.read(new File("pics/mossy.png"));
+        } catch(Exception e) {
+            // do nothing
+        }
+
+        try {
+            images[3] = ImageIO.read(new File("pics/purplestone.png"));
+        } catch(Exception e) {
+            // do nothing
+        }
+
+        try {
+            images[4] = ImageIO.read(new File("pics/redbrick.png"));
+        } catch(Exception e) {
+            // do nothing
+        }
+
+        try {
+            images[5] = ImageIO.read(new File("pics/eagle.png"));
+        } catch(Exception e) {
+            // do nothing
+        }
+
+        try {
+            images[6] = ImageIO.read(new File("pics/wood.png"));
+        } catch(Exception e) {
+            // do nothing
+        }
+
+        try {
+            images[7] = ImageIO.read(new File("pics/colorstone.png"));
+        } catch(Exception e) {
+            // do nothing
+        }
     }
 
     @Override
@@ -79,51 +150,62 @@ public class Surface extends JPanel {
                 sideDistY = (mapY + 1.0 - posY) * deltaDistY;
             }
 
-            while (hit == 0)
-            {
-                //jump to next map square, OR in x-direction, OR in y-direction
-                if (sideDistX < sideDistY)
-                {
+            side = 0;
+
+            while(hit == 0) {
+                if (sideDistX < sideDistY) {
                     sideDistX += deltaDistX;
                     mapX += stepX;
                     side = 0;
-                }
-                else
-                {
+                } else {
                     sideDistY += deltaDistY;
                     mapY += stepY;
                     side = 1;
                 }
-                //Check if ray has hit a wall
+
                 if (this.map[mapX][mapY] > 0) {
                     hit = 1;
                 }
+            }
 
-                if (side == 0) {
-                    perpWallDist = (mapX - posX + (1 - stepX) / 2) / rayDirX;
-                } else {
-                    perpWallDist = (mapY - posY + (1 - stepY) / 2) / rayDirY;
-                }
+            if (side == 0) {
+                perpWallDist = (mapX - posX + (1 - stepX) / 2) / rayDirX;
+            } else {
+                perpWallDist = (mapY - posY + (1 - stepY) / 2) / rayDirY;
+            }
 
-                int h = AppContext.LENGTH;
+            int h = AppContext.LENGTH;
 
-                int lineHeight = (int)(h / perpWallDist);
+            int lineHeight = (int)(h / perpWallDist);
 
-                int drawStart = -lineHeight / 2 + h / 2;
-                if(drawStart < 0)drawStart = 0;
-                int drawEnd = lineHeight / 2 + h / 2;
-                if(drawEnd >= h)drawEnd = h - 1;
+            int drawStart = -lineHeight / 2 + h / 2;
+            if(drawStart < 0)drawStart = 0;
+            int drawEnd = lineHeight / 2 + h / 2;
+            if(drawEnd >= h)drawEnd = h - 1;
 
-                Color color;
+            int texNum = map[mapX][mapY] - 1;
 
-                color = getColor(map[mapX][mapY]);
+            double wallX;
+            if(side == 0)   wallX = posY + perpWallDist * rayDirY;
+            else            wallX = posX + perpWallDist * rayDirX;
+            wallX -= Math.floor((wallX));
 
-                if (side == 1) {
-                    color = color.darker();
-                }
+            int texX = (int)(wallX * (double) texSize);
+            if(side == 1 && rayDirX > 0) texX = texSize - texX - 1;
+            if(side == 1 && rayDirY < 0) texX = texSize - texX - 1;
 
-                g2d.setColor(color);
-                g2d.drawLine(x, drawStart, x, drawEnd);
+            for(int y = drawStart; y < drawEnd; y++) {
+                int d = y * 256 - h * 128 + lineHeight * 128;
+                int texY = ((d * texSize) / lineHeight) / 256;
+                buffer[x][y] = (side == 1) ? new Color(images[texNum].getRGB(texX, texY)) : new Color(images[texNum].getRGB(texX, texY)).darker();
+            }
+        }
+
+        for(int x = 0; x < windowWidth; x++) {
+            for(int y = 0; y < windowLength; y++) {
+                g2d.setColor(buffer[x][y]);
+                g2d.drawLine(x, y, x, y);
+                buffer[x][y] = Color.black;
             }
         }
 
@@ -137,7 +219,7 @@ public class Surface extends JPanel {
         int floorX = (int)this.posX;
         int floorY = (int)this.posY;
 
-        for(int x = floorX + 5; x >= floorX - 5; x--) {
+        for(int x = floorX - 5; x <= floorX + 5; x++) {
             for(int y = floorY + 5; y >= floorY - 5; y--) {
                 if(x != floorX || y != floorY) {
                     try {
@@ -161,6 +243,10 @@ public class Surface extends JPanel {
             drawX += increment;
             drawY = increment;
         }
+
+        int num = (AppContext.WIDTH / 50) - 1;
+        g2d.setColor(Color.gray);
+        g2d.drawRect(num, num, drawX - increment, drawX - increment);
     }
 
     private void execute(int dir) {

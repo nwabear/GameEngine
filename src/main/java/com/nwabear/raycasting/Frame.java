@@ -28,7 +28,7 @@ public class Frame extends JFrame {
         this.setSize(width, height);
         this.setLocationRelativeTo(null);
         this.setResizable(false);
-        this.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         gc.start();
 
