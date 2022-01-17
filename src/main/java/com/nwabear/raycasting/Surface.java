@@ -6,8 +6,10 @@ import org.w3c.dom.css.RGBColor;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.nio.Buffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -29,6 +31,9 @@ public class Surface extends JPanel {
 
     private Frame frame;
 
+    private int screenWidth;
+    private int screenHeight;
+
     private final int windowLength = AppContext.LENGTH;
     private final int windowWidth = AppContext.WIDTH;
     private int texSize;
@@ -44,14 +49,16 @@ public class Surface extends JPanel {
         this.frame = frame;
         this.rotSpeed = 1.579;
         this.rotate(2);
-        this.rotSpeed = 0.05;
+        this.rotSpeed = AppContext.TURN_SPEED;
         this.buffer = new Color[this.windowWidth][this.windowLength];
+        this.screenWidth = (int)Toolkit.getDefaultToolkit().getScreenSize().getWidth();
+        this.screenHeight = (int)Toolkit.getDefaultToolkit().getScreenSize().getHeight();
         for(int x = 0; x < windowWidth; x++) {
             for(int y = 0; y < windowLength; y++) {
                 buffer[x][y] = Color.black;
             }
         }
-        images = new BufferedImage[8];
+        images = new BufferedImage[10];
 
         texSize = AppContext.TEX_SIZE;
 
@@ -61,48 +68,15 @@ public class Surface extends JPanel {
 
         try {
             images[0] = ImageIO.read(new File("pack/01.png"));
-        } catch(Exception e) {
-            // do nothing
-        }
-
-        try {
             images[1] = ImageIO.read(new File("pack/02.png"));
-        } catch(Exception e) {
-            // do nothing
-        }
-
-        try {
             images[2] = ImageIO.read(new File("pack/03.png"));
-        } catch(Exception e) {
-            // do nothing
-        }
-
-        try {
             images[3] = ImageIO.read(new File("pack/04.png"));
-        } catch(Exception e) {
-            // do nothing
-        }
-
-        try {
             images[4] = ImageIO.read(new File("pack/05.png"));
-        } catch(Exception e) {
-            // do nothing
-        }
-
-        try {
             images[5] = ImageIO.read(new File("pack/06.png"));
-        } catch(Exception e) {
-            // do nothing
-        }
-
-        try {
             images[6] = ImageIO.read(new File("pack/07.png"));
-        } catch(Exception e) {
-            // do nothing
-        }
-
-        try {
             images[7] = ImageIO.read(new File("pack/08.png"));
+            images[8] = ImageIO.read(new File("pack/09.png"));
+            images[9] = ImageIO.read(new File("pack/10.png"));
         } catch(Exception e) {
             // do nothing
         }
@@ -113,6 +87,7 @@ public class Surface extends JPanel {
         super.paintComponent(graphics);
 
         Graphics2D g2d = (Graphics2D)(graphics);
+
         int w = AppContext.WIDTH;
         for(int x = 0; x < w; x++) {
             double cameraX = 2 * x / (double)(w) - 1;
@@ -152,6 +127,7 @@ public class Surface extends JPanel {
             }
 
             side = 0;
+            boolean black = false;
 
             while(hit == 0) {
                 if (sideDistX < sideDistY) {
@@ -164,8 +140,20 @@ public class Surface extends JPanel {
                     side = 1;
                 }
 
-                if (this.map[mapX][mapY] > 0) {
+                if(this.map[mapX][mapY] > 0) {
                     hit = 1;
+                }
+
+                if (side == 0) {
+                    if((mapX - posX + (1 - stepX) / 2) / rayDirX > AppContext.RENDER_DISTANCE) {
+                        black = true;
+                        hit = 1;
+                    }
+                } else {
+                    if((mapY - posY + (1 - stepY) / 2) / rayDirY > AppContext.RENDER_DISTANCE) {
+                        black = true;
+                        hit = 1;
+                    }
                 }
             }
 
@@ -177,49 +165,97 @@ public class Surface extends JPanel {
 
             int h = AppContext.LENGTH;
 
-            int lineHeight = (int)(h / perpWallDist);
+            int lineHeight = (int) (h / perpWallDist);
 
             int drawStart = -lineHeight / 2 + h / 2;
-            if(drawStart < 0)drawStart = 0;
+            if (drawStart < 0) drawStart = 0;
             int drawEnd = lineHeight / 2 + h / 2;
-            if(drawEnd >= h)drawEnd = h - 1;
+            if (drawEnd >= h) drawEnd = h - 1;
 
             int texNum = map[mapX][mapY] - 1;
 
             double wallDistance;
 
             double wallX;
-            if(side == 0)   wallX = posY + perpWallDist * rayDirY;
-            else            wallX = posX + perpWallDist * rayDirX;
+            if (side == 0) wallX = posY + perpWallDist * rayDirY;
+            else wallX = posX + perpWallDist * rayDirX;
             wallX -= Math.floor((wallX));
 
-            int texX = (int)(wallX * (double) texSize);
-            if(side == 1 && rayDirX > 0) texX = texSize - texX - 1;
-            if(side == 1 && rayDirY < 0) texX = texSize - texX - 1;
+            int texX = (int) (wallX * (double) texSize);
+            if (side == 1 && rayDirX > 0) texX = texSize - texX - 1;
+            if (side == 1 && rayDirY < 0) texX = texSize - texX - 1;
             if (side == 0) {
                 wallDistance = (mapX - posX + (1 - stepX) / 2) / rayDirX;
             } else {
                 wallDistance = (mapY - posY + (1 - stepY) / 2) / rayDirY;
             }
 
-            for(int y = drawStart; y < drawEnd; y++) {
-                int d = y * 256 - h * 128 + lineHeight * 128;
-                int texY = ((d * texSize) / lineHeight) / 256;
-                buffer[x][y] = (side == 1) ? new Color(images[texNum].getRGB(texX, texY)) : new Color(images[texNum].getRGB(texX, texY)).darker();
+            if(!black) {
+                for (int y = drawStart; y < drawEnd; y++) {
+                    int d = y * 256 - h * 128 + lineHeight * 128;
+                    int texY = ((d * texSize) / lineHeight) / 256;
+                    buffer[x][y] = (side == 1) ? new Color(images[texNum].getRGB(texX, texY)) : new Color(images[texNum].getRGB(texX, texY)).darker();
+                }
+            } else {
+                for(int y = drawStart; y < drawEnd; y++) {
+                    buffer[x][y] = Color.black;
+                }
+            }
+
+            double floorXWall;
+            double floorYWall;
+            if (side == 0 && rayDirX > 0) {
+                floorXWall = mapX;
+                floorYWall = mapY + wallX;
+            } else if (side == 0 && rayDirX < 0) {
+                floorXWall = mapX + 1.0;
+                floorYWall = mapY + wallX;
+            } else if (side == 1 && rayDirY > 0) {
+                floorXWall = mapX + wallX;
+                floorYWall = mapY;
+            } else {
+                floorXWall = mapX + wallX;
+                floorYWall = mapY + 1.0;
+            }
+
+            for (int y = drawEnd; y < h; y++) {
+                double curDist = h / (2.0 * y - h);
+
+                double weight = Math.abs(curDist / (wallDistance));
+
+                int floorTexel;
+                int ceilingTexel;
+
+                double floorX = Math.abs(weight * floorXWall + (1.0 - weight) * posX);
+                double floorY = Math.abs(weight * floorYWall + (1.0 - weight) * posY);
+
+                texX = (int) (floorX * texSize) % texSize;
+                int texY = (int) (floorY * texSize) % texSize;
+
+                ceilingTexel = images[8].getRGB(texX, texY);
+                floorTexel = images[9].getRGB(texX, texY);
+
+                buffer[x][y] = new Color(floorTexel);
+
+                if ((windowLength - y) >= 0 && (windowLength - y) < (drawStart)) {
+                    buffer[x][(windowLength - y)] = new Color(ceilingTexel);
+                }
             }
         }
+
+        BufferedImage image = new BufferedImage(windowWidth, windowLength, BufferedImage.TYPE_3BYTE_BGR);
 
         for(int x = 0; x < windowWidth; x++) {
             for(int y = 0; y < windowLength; y++) {
-                g2d.setColor(buffer[x][y]);
-                g2d.drawLine(x, y, x, y);
-                buffer[x][y] = Color.black;
+                image.setRGB(x, y, buffer[x][y].getRGB());
             }
         }
 
-        int drawX = AppContext.WIDTH / 50;
+        int drawX = AppContext.WIDTH / 75;
         int drawY = drawX;
         int increment = drawX;
+
+        g2d.drawImage(image, 0, 0, null);
 
         g2d.setColor(Color.BLACK);
         g2d.fillRect(0, 0, increment * 13, increment * 13);
@@ -252,7 +288,7 @@ public class Surface extends JPanel {
             drawY = increment;
         }
 
-        int num = (AppContext.WIDTH / 50) - 1;
+        int num = (AppContext.WIDTH / 75);
         g2d.setColor(Color.gray);
         g2d.drawRect(num, num, drawX - increment, drawX - increment);
     }

@@ -25,8 +25,10 @@ public class Frame extends JFrame {
         int width = AppContext.WIDTH;
         int height = AppContext.LENGTH;
         this.setSize(width, height);
+        this.setUndecorated(true);
+        this.setVisible(true);
         this.setLocationRelativeTo(null);
-        this.setResizable(false);
+        this.setResizable(true);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         gc.start();

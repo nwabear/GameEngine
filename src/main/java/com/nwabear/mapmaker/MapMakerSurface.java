@@ -68,8 +68,6 @@ public class MapMakerSurface extends JPanel {
             int y = this.getPoint(this.point.y) / 32;
 
             switch(this.grid[x][y].getAction()) {
-                case 0:
-                    break;
                 case 1:
                     this.writeGrid(x, y);
                     break;

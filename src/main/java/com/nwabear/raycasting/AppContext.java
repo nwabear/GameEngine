@@ -1,5 +1,6 @@
 package com.nwabear.raycasting;
 
+import java.awt.*;
 import java.io.File;
 import java.util.Scanner;
 
@@ -7,12 +8,15 @@ public class AppContext {
     public static final int FPS = 50;
     public static final int FPS_DELAY_MILLIS = 1000 / FPS;
 
-    public static final int WIDTH = 640;
     public static final int LENGTH = 400;
+    public static final int WIDTH = (int)(LENGTH * Toolkit.getDefaultToolkit().getScreenSize().getWidth() / Toolkit.getDefaultToolkit().getScreenSize().getHeight());
 
     public static final int TEX_SIZE = 64;
 
+    public static final int RENDER_DISTANCE = 20;
+
     public static final double MOVE_SPEED = 0.1;
+    public static final double TURN_SPEED = 0.05;
 
     public static final int[][] MAP = loadFile();
 
